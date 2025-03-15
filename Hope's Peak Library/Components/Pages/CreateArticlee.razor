@@ -1,0 +1,114 @@
+﻿@rendermode InteractiveServer
+@using Logto.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@inject NavigationManager NavigationManager
+@inject IJSRuntime jsRuntime
+
+@page "/CreateArticle"
+
+<PageTitle>Hope's Peak Library</PageTitle>
+
+<div class="w-full h-32 bg-violet-600 shadow-indigo-500/50 shadow-2xl inset-shadow-sm ">
+
+    <div class="grid grid-cols-12 gap-8 ">
+
+        <img @onclick="() => {NavigateTo(Home);}" class=" ml-8 m-auto scale-125 mt-8 hover:scale-150 hover:cursor-pointer duration-150 ease-in-out transition-all" src="Media/HPLIBRARY.png" />
+        @if (User.Identity?.IsAuthenticated == false)
+        {
+            <button @onclick="SignIn" class=" ml-4 mt-8 hover:scale-125 duration-150 ease-in-out transition-all border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-xl text-sm focus:border-black focus:outline-none">Sign in</button>
+        }
+        else
+        {
+            <button @onclick="() => {NavigateTo(CA);}" class=" ml-4 mt-8 hover:scale-125 duration-150 ease-in-out transition-all border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-xl text-sm focus:border-black focus:outline-none">Articles</button>
+            <button @onclick="SignOut" class=" ml-4 mt-8 hover:scale-125 duration-150 ease-in-out transition-all border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-xl text-sm focus:border-black focus:outline-none">Sign out</button>
+
+        }
+
+    </div>
+
+</div>
+<div style="height: 100px;"></div>
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <h1 class="ml-8 text-violet-400">Note: Articles use MARKDOWN</h1>
+    <div>
+    <input @bind="Name" type="text" class=" ml-8 hover:scale-125 focus:scale-125 duration-150 ease-in-out transition-all m-auto  border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-xl text-sm focus:border-black focus:outline-none"  placeholder="Article name..." />'
+        <button @onclick="CreateArticle" class=" ml-8 hover:scale-125 focus:scale-125 duration-150 ease-in-out transition-all m-auto  border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-xl text-sm focus:border-black focus:outline-none">Create Article</button>
+    </div>
+    <div style="height:15px;"></div>
+    <textarea @bind="Content" style="width: 95%; height: 1000px;" class=" m-8   duration-150 ease-in-out transition-all m-auto  border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-xl text-sm focus:border-black focus:outline-none" placeholder="Article content..."></textarea>
+
+      }
+else {
+            <h1 class="m-auto scale-200">Please log in!</h1>
+}
+     
+
+
+    @code {
+
+        public string Home { get; set; } = "/";
+    public string Name { get; set; }
+    public string Content { get; set; }
+
+    public string CA { get; set; } = "/Articles";
+
+    private ClaimsPrincipal? User { get; set; }
+
+    public void inpte()
+    {
+
+        var claims = User.Claims;
+
+        // Get the user ID
+        var userId = claims.FirstOrDefault(c => c.Type == LogtoParameters.Claims.Subject)?.Value;
+
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        User = authState.User;
+    }
+
+    private void SignIn()
+    {
+        NavigationManager.NavigateTo("/SignIn", forceLoad: true);
+    }
+
+    private void SignOut()
+    {
+        NavigationManager.NavigateTo("/SignOut", forceLoad: true);
+    }
+    public async Task Reload()
+    {
+        string url = "/CreateArticle";
+        await jsRuntime.InvokeAsync<object>("open", url, "_self");
+    }
+    public async Task NavigateTo(string url)
+    {
+
+        await jsRuntime.InvokeAsync<object>("open", url, "_self");
+    }
+    public async Task NavigateToNT(string url)
+    {
+
+        await jsRuntime.InvokeAsync<object>("open", url, "_blank");
+    }
+    public void CreateArticle()
+    {
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            if (Name != null && Content != null)
+            {
+                string FileN = DateTime.Now.ToString("yyyyMMddHHmmss") + Name;
+                File.WriteAllText("wwwroot/Articles/" + FileN + ".md", Content);
+                
+                
+                NavigateTo("/Articles");
+            }
+        }
+    }
+}
