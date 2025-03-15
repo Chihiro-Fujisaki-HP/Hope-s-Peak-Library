@@ -1,3 +1,5 @@
+# CHIHIRO SIGNED
+
 # 🌟 Hope's Peak Library 📖
 
 Hope's Peak Library is an interactive Blazor Server web application inspired by **Danganronpa's Hope's Peak Academy**. It serves as a **digital knowledge hub**, allowing users to create, browse, and manage articles seamlessly. With a sleek UI, Markdown support, and secure authentication, it provides an engaging experience for knowledge sharing.
